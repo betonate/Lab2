@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db3:
+    container_name: db3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: dbnode
+    ports:
+      - "50052:50052"
+    environment:
+      - DOTENV=true
+      - NODE_IP=${NODE_IP}
+    command: ["-id", "DB3", "-port", "50052", "-broker", "${BROKER_ADDR}", "-peers", "${DB1_ADDR},${DB2_ADDR}"]
+    restart: always
+
+  dataclub:
+    container_name: dataclub
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: productor
+    environment:
+      - DOTENV=true
+    command: ["-name", "DataClub", "-catalog", "tests_files/${CATALOG_FILE}", "-broker", "${BROKER_ADDR}"]
+    depends_on:
+      - db3
+    restart: always
+
+  dockersnight:
+    container_name: dockersnight
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: productor
+    environment:
+      - DOTENV=true
+    command: ["-name", "Dockers Night", "-catalog", "tests_files/${CATALOG_FILE}", "-broker", "${BROKER_ADDR}"]
+    depends_on:
+      - db3
+    restart: always
+
+  golounge:
+    container_name: golounge
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: productor
+    environment:
+      - DOTENV=true
+    command: ["-name", "GoLounge", "-catalog", "tests_files/${CATALOG_FILE}", "-broker", "${BROKER_ADDR}"]
+    depends_on:
+      - db3
+    restart: always
+
+  georgiehouse:
+    container_name: georgiehouse
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: productor
+    environment:
+      - DOTENV=true
+    command: ["-name", "GeorgieHouse", "-catalog", "tests_files/${CATALOG_FILE}", "-broker", "${BROKER_ADDR}"]
+    depends_on:
+      - db3
+    restart: always

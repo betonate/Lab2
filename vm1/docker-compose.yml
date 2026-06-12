@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  broker:
+    container_name: broker
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: broker
+    ports:
+      - "50051:50051"
+    environment:
+      - DOTENV=true
+    restart: always

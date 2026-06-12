@@ -1,0 +1,149 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "lab2/proto";
+
+// Safe identification entity types
+enum EntityType {
+  UNKNOWN = 0;
+  PRODUCER = 1;
+  DBNODE = 2;
+  CONSUMER = 3;
+  BANK = 4;
+}
+
+message RegisterRequest {
+  string entity_id = 1; // e.g., "DataClub", "DB1", "ClienteA", "BancoUSM"
+  EntityType entity_type = 2;
+  string address = 3; // IP:Port of the entity (if server)
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Event structure
+message Event {
+  string event_id = 1; // uuidv4 or EV-xxx
+  string discoteca = 2; // e.g., "DataClub"
+  string nombre_evento = 3;
+  string categoria = 4;
+  string comuna = 5;
+  int32 precio = 6;
+  int32 stock = 7;
+  string fecha_evento = 8;
+  string fecha_publicacion = 9;
+}
+
+message PublishResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetEventsRequest {
+  string client_id = 1;
+}
+
+message GetEventsResponse {
+  repeated Event events = 1;
+}
+
+message BuyRequest {
+  string client_id = 1;
+  string event_id = 2;
+  string medio_pago = 3; // "debito" or "credito"
+  int32 monto = 4;
+}
+
+message BuyResponse {
+  bool success = 1;
+  string ticket_id = 2;
+  string message = 3;
+}
+
+message HistoryRequest {
+  string client_id = 1;
+}
+
+message TicketInfo {
+  string ticket_id = 1;
+  string client_id = 2;
+  string event_id = 3;
+  string discoteca = 4;
+  string nombre_evento = 5;
+  int32 precio = 6;
+  string fecha_compra = 7;
+}
+
+message HistoryResponse {
+  repeated TicketInfo tickets = 1;
+}
+
+// Broker Service
+service BrokerService {
+  rpc RegisterEntity(RegisterRequest) returns (RegisterResponse);
+  rpc PublishEvent(Event) returns (PublishResponse);
+  rpc GetEvents(GetEventsRequest) returns (GetEventsResponse);
+  rpc BuyTicket(BuyRequest) returns (BuyResponse);
+  rpc GetPurchaseHistory(HistoryRequest) returns (HistoryResponse);
+}
+
+// DB Node Service and Messages
+message WriteRequest {
+  string key = 1; // e.g., "event:<id>" or "ticket:<id>"
+  string value_json = 2;
+  int64 timestamp = 3; // Unix timestamp in nanoseconds for LWW consistency
+}
+
+message WriteResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ReadRequest {
+  string key = 1;
+}
+
+message ReadResponse {
+  bool success = 1;
+  string value_json = 2;
+  int64 timestamp = 3;
+  string message = 4;
+}
+
+message SyncRequest {
+  string requester_node_id = 1;
+}
+
+message DBEntry {
+  string value_json = 1;
+  int64 timestamp = 2;
+}
+
+message SyncResponse {
+  map<string, DBEntry> db_data = 1;
+}
+
+service DBNodeService {
+  rpc WriteData(WriteRequest) returns (WriteResponse);
+  rpc ReadData(ReadRequest) returns (ReadResponse);
+  rpc SyncNode(SyncRequest) returns (SyncResponse);
+}
+
+// USM Bank Service
+message PaymentRequest {
+  string client_id = 1;
+  int32 amount = 2;
+  string method = 3; // "debito" or "credito"
+}
+
+message PaymentResponse {
+  bool approved = 1;
+  string message = 2;
+}
+
+service BancoService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}

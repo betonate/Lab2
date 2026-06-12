@@ -1,0 +1,7 @@
+
+app_bin
+*.exe
+build_test.exe
+db_data_*.json
+vm3/data/*.csv
+Reporte.txt

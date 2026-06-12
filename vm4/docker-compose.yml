@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db1:
+    container_name: db1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: dbnode
+    ports:
+      - "50052:50052"
+    environment:
+      - DOTENV=true
+      - NODE_IP=${NODE_IP}
+    command: ["-id", "DB1", "-port", "50052", "-broker", "${BROKER_ADDR}", "-peers", "${DB2_ADDR},${DB3_ADDR}"]
+    restart: always
+
+  bancousm:
+    container_name: bancousm
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: banco
+    ports:
+      - "50053:50053"
+    environment:
+      - DOTENV=true
+      - NODE_IP=${NODE_IP}
+    command: ["-id", "BancoUSM", "-port", "50053", "-broker", "${BROKER_ADDR}"]
+    restart: always

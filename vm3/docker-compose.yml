@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db2:
+    container_name: db2
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: dbnode
+    ports:
+      - "50052:50052"
+    environment:
+      - DOTENV=true
+      - NODE_IP=${NODE_IP}
+    command: ["-id", "DB2", "-port", "50052", "-broker", "${BROKER_ADDR}", "-peers", "${DB1_ADDR},${DB3_ADDR}"]
+    restart: always
+
+  clientea:
+    container_name: clientea
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: consumidor
+    environment:
+      - DOTENV=true
+    volumes:
+      - ./data:/app/data
+    command: ["-id", "ClienteA", "-payment", "debito", "-broker", "${BROKER_ADDR}", "-csvdir", "data"]
+    depends_on:
+      - db2
+    restart: always
+
+  clienteb:
+    container_name: clienteb
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMPONENT: consumidor
+    environment:
+      - DOTENV=true
+    volumes:
+      - ./data:/app/data
+    command: ["-id", "ClienteB", "-payment", "credito", "-broker", "${BROKER_ADDR}", "-csvdir", "data"]
+    depends_on:
+      - db2
+    restart: always
