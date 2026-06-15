@@ -3,6 +3,7 @@
 ## Integrantes
 
 Alberto Oñate - 202173103-2
+Nicolás Muñoz - 202073512-3
 
 
 
